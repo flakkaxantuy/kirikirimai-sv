@@ -1,0 +1,68 @@
+@import "tailwindcss";
+
+@theme {
+  --color-primary: #2B7A4B;
+  --color-primary-light: #358A57;
+  --color-secondary: #e30613;
+  --color-accent: #e30613;
+  --color-danger: #e30613;
+  --color-success: #2B7A4B;
+  --color-warning: #f59e0b;
+  
+  --color-background: #f4f6f8;
+  --color-surface: #ffffff;
+  --color-text-main: #1f2937;
+  --color-text-muted: #6b7280;
+}
+
+@layer base {
+  body {
+    background-color: var(--color-background);
+    color: var(--color-text-main);
+    font-family: 'Inter', sans-serif;
+    -webkit-tap-highlight-color: transparent;
+  }
+}
+
+@layer utilities {
+  .glass {
+    @apply bg-white/85 backdrop-blur-md border border-slate-200 shadow-xl;
+  }
+  
+  .glass-dark {
+    @apply bg-slate-900/90 backdrop-blur-md border border-slate-800 shadow-xl;
+  }
+
+  .gradient-spil {
+    background: linear-gradient(135deg, #1E5950 0%, #2B7A4B 50%, #1E5950 100%);
+  }
+
+  .btn-primary {
+    @apply bg-[#2B7A4B] text-white hover:bg-[#22633C] active:scale-95 transition-all shadow-md py-3 px-6 rounded-2xl font-bold;
+  }
+
+  .btn-secondary {
+    @apply bg-[#1E5950] text-white hover:bg-[#174740] active:scale-95 transition-all shadow-md py-3 px-6 rounded-2xl font-bold;
+  }
+
+  .btn-accent {
+    @apply bg-[#e30613] text-white hover:bg-[#c80510] active:scale-95 transition-all shadow-md py-3 px-6 rounded-2xl font-bold;
+  }
+  
+  .btn-outline {
+    @apply border-2 border-[#2B7A4B] text-[#2B7A4B] hover:bg-emerald-50 active:scale-95 transition-all py-3 px-6 rounded-2xl font-bold;
+  }
+  
+  .input-field {
+    @apply w-full px-4 py-3 rounded-2xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#2B7A4B] focus:border-transparent transition-all shadow-sm text-base text-slate-900 font-medium;
+  }
+  
+  .card {
+    @apply bg-white rounded-2xl shadow-sm border border-slate-200 p-6;
+  }
+}
+
+/* Hide Next.js Dev Overlay Indicator Button (N icon) on mobile UI */
+nextjs-portal, #nextjs-dev-tools-button, [data-nextjs-toast] {
+  display: none !important;
+}

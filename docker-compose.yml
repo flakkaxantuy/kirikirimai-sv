@@ -1,0 +1,29 @@
+services:
+  app:
+    build: .
+    container_name: spil-ijin-kerja-app
+    restart: always
+    environment:
+      - PORT=3000
+      - NODE_ENV=production
+      - NEXT_PUBLIC_BASE_PATH=/app/ijin-kerja
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=traefik-net"
+      # Public Router (px.spil.co.id) - External Access
+      - "traefik.http.routers.spil-ijin-kerja-public.rule=Host(`px.spil.co.id`) && PathPrefix(`/app/ijin-kerja`)"
+      - "traefik.http.routers.spil-ijin-kerja-public.entrypoints=web"
+      # Admin Router (pe.spil.co.id) - Internal Secure Access
+      - "traefik.http.routers.spil-ijin-kerja-admin.rule=Host(`pe.spil.co.id`) && PathPrefix(`/app/ijin-kerja`)"
+      - "traefik.http.routers.spil-ijin-kerja-admin.entrypoints=websecure"
+      - "traefik.http.routers.spil-ijin-kerja-admin.tls=true"
+      # Load Balancer Service Port
+      - "traefik.http.services.spil-ijin-kerja-svc.loadbalancer.server.port=3000"
+    volumes:
+      - ./spil_permits.db:/app/spil_permits.db
+    networks:
+      - traefik-net
+
+networks:
+  traefik-net:
+    external: true
