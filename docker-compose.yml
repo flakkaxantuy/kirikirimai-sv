@@ -12,10 +12,11 @@ services:
       - "traefik.docker.network=traefik-net"
       # Public Router (px.spil.co.id) - External Access
       - "traefik.http.routers.spil-ijin-kerja-public.rule=Host(`px.spil.co.id`) && PathPrefix(`/app/ijin-kerja`)"
-      - "traefik.http.routers.spil-ijin-kerja-public.entrypoints=web"
+      - "traefik.http.routers.spil-ijin-kerja-public.entrypoints=web,websecure"
+      - "traefik.http.routers.spil-ijin-kerja-public.tls=true"
       # Admin Router (pe.spil.co.id) - Internal Secure Access
       - "traefik.http.routers.spil-ijin-kerja-admin.rule=Host(`pe.spil.co.id`) && PathPrefix(`/app/ijin-kerja`)"
-      - "traefik.http.routers.spil-ijin-kerja-admin.entrypoints=websecure"
+      - "traefik.http.routers.spil-ijin-kerja-admin.entrypoints=web,websecure"
       - "traefik.http.routers.spil-ijin-kerja-admin.tls=true"
       # Load Balancer Service Port
       - "traefik.http.services.spil-ijin-kerja-svc.loadbalancer.server.port=3000"
