@@ -12,6 +12,8 @@ const DEFAULT_PERMITS: PermitData[] = [];
 
 export default function DashboardPage() {
   const router = useRouter();
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
+  const [adminUser, setAdminUser] = useState<string>("Admin");
   const [search, setSearch] = useState("");
   const [yearFilter, setYearFilter] = useState("all");
   const [monthFilter, setMonthFilter] = useState("all");
@@ -19,6 +21,28 @@ export default function DashboardPage() {
   const [statusFilter, setStatusFilter] = useState<string[]>([]);
   const [permits, setPermits] = useState<PermitData[]>([]);
   const [selectedPermitForPDF, setSelectedPermitForPDF] = useState<PermitData | null>(null);
+
+  // Authentication Guard
+  useEffect(() => {
+    const auth = localStorage.getItem("spil_authenticated");
+    const user = localStorage.getItem("spil_admin_user");
+    if (!auth) {
+      router.replace("/");
+    } else {
+      setIsAuthenticated(true);
+      if (user) setAdminUser(user);
+    }
+  }, [router]);
+
+  const handleLogout = async () => {
+    localStorage.removeItem("spil_authenticated");
+    localStorage.removeItem("spil_admin_user");
+    const basePath = process.env.NEXT_PUBLIC_BASE_PATH || "";
+    try {
+      await fetch(`${basePath}/api/auth/logout`, { method: "POST" });
+    } catch (_) {}
+    router.replace("/");
+  };
 
   // Available years dynamic extractor
   const availableYears = Array.from(
@@ -183,6 +207,17 @@ export default function DashboardPage() {
     document.body.removeChild(link);
   };
 
+  if (!isAuthenticated) {
+    return (
+      <div className="min-h-screen bg-slate-900 flex items-center justify-center p-4">
+        <div className="text-center space-y-3">
+          <Loader2 className="w-8 h-8 animate-spin text-emerald-500 mx-auto" />
+          <p className="text-slate-400 text-xs font-bold">Memverifikasi Sesi Admin...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col w-full overflow-x-hidden">
       {/* Top Header Section - Compact Text-Only Header */}
@@ -193,11 +228,11 @@ export default function DashboardPage() {
               Dashboard E-Permit
             </h1>
             <p className="text-emerald-100/85 text-xs truncate font-medium tracking-wide mt-0.5">
-              Selamat Datang, Dedi Prasetyo!
+              Selamat Datang, {adminUser}!
             </p>
           </div>
           <button 
-            onClick={() => router.push("/")} 
+            onClick={handleLogout} 
             className="p-2 sm:px-3 sm:py-2 bg-black/20 hover:bg-black/30 active:scale-95 transition-all rounded-xl shrink-0 flex items-center gap-1.5 text-xs font-bold text-white border border-white/20 shadow-sm cursor-pointer"
             title="Keluar"
           >

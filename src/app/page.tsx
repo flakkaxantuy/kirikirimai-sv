@@ -60,6 +60,8 @@ export default function LoginPage() {
       const data = await res.json();
       
       if (data.success) {
+        localStorage.setItem("spil_authenticated", "true");
+        localStorage.setItem("spil_admin_user", username);
         router.push("/dashboard");
       } else {
         setError(data.message || "Login gagal");

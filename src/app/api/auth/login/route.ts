@@ -12,7 +12,17 @@ export async function POST(request: Request) {
     const isValid = await loginUserDB(username, password);
     
     if (isValid) {
-      return NextResponse.json({ success: true });
+      const response = NextResponse.json({ success: true, username });
+      response.cookies.set({
+        name: 'spil_admin_session',
+        value: 'authenticated',
+        httpOnly: true,
+        secure: false, // works on HTTP and HTTPS
+        sameSite: 'lax',
+        path: '/',
+        maxAge: 60 * 60 * 24, // 24 hours
+      });
+      return response;
     } else {
       return NextResponse.json({ success: false, message: 'Username atau Password salah' }, { status: 401 });
     }
