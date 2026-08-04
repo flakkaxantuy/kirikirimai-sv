@@ -15,8 +15,8 @@ COPY . .
 ENV NEXT_PUBLIC_BASE_PATH=/app/ijin-kerja
 ENV NODE_ENV=production
 
-# Build Next.js application
-RUN npm run build
+# Clean any stale build artifacts and build Next.js application
+RUN rm -rf .next && npm run build
 
 # Production runner stage
 FROM node:20-alpine AS runner
