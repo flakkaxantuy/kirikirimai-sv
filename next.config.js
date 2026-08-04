@@ -1,13 +1,11 @@
-import type { NextConfig } from "next";
-
+/** @type {import('next').NextConfig} */
 const basePath = process.env.NEXT_PUBLIC_BASE_PATH || "/app/ijin-kerja";
 
-const nextConfig: NextConfig = {
+const nextConfig = {
   basePath: basePath,
   env: {
     NEXT_PUBLIC_BASE_PATH: basePath,
   },
 };
 
-export default nextConfig;
-
+module.exports = nextConfig;
