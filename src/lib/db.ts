@@ -1,6 +1,6 @@
 import { createClient } from "@libsql/client";
 import path from "path";
-import fs from "fs";
+import bcrypt from "bcryptjs";
 
 // Resolve local SQLite file path
 const dbPath = process.env.DB_PATH || path.join(process.cwd(), "spil_permits.db");
@@ -28,11 +28,32 @@ export async function initDb() {
         password TEXT NOT NULL
       );
     `);
-    
-    await client.execute(`
-      INSERT OR IGNORE INTO users (username, password) 
-      VALUES ('admin1', 'admin1'), ('admin2', 'admin2'), ('admin3', 'admin3')
-    `);
+
+    // Insert default accounts if table is empty
+    const usersCount = await client.execute("SELECT COUNT(*) as count FROM users");
+    if (Number(usersCount.rows[0]?.count || 0) === 0) {
+      const defaultUsers = ["admin1", "admin2", "admin3"];
+      for (const u of defaultUsers) {
+        const hash = bcrypt.hashSync(u, 10);
+        await client.execute({
+          sql: "INSERT OR IGNORE INTO users (username, password) VALUES (?, ?)",
+          args: [u, hash]
+        });
+      }
+    } else {
+      // Auto-migrate any unhashed plain-text passwords in DB to bcrypt hashes
+      const allUsers = await client.execute("SELECT username, password FROM users");
+      for (const row of allUsers.rows) {
+        const pass = String(row.password);
+        if (!pass.startsWith("$2a$") && !pass.startsWith("$2b$")) {
+          const newHash = bcrypt.hashSync(pass, 10);
+          await client.execute({
+            sql: "UPDATE users SET password = ? WHERE username = ?",
+            args: [newHash, row.username]
+          });
+        }
+      }
+    }
 
     isInitialized = true;
   } catch (err) {
@@ -43,10 +64,30 @@ export async function initDb() {
 export async function loginUserDB(username: string, password: string) {
   await initDb();
   const res = await client.execute({
-    sql: "SELECT * FROM users WHERE username = ? AND password = ?",
-    args: [username, password]
+    sql: "SELECT password FROM users WHERE username = ?",
+    args: [username]
   });
-  return res.rows.length > 0;
+
+  if (res.rows.length === 0) return false;
+
+  const storedPass = String(res.rows[0].password);
+
+  // If password is stored as bcrypt hash
+  if (storedPass.startsWith("$2a$") || storedPass.startsWith("$2b$")) {
+    return bcrypt.compareSync(password, storedPass);
+  }
+
+  // Fallback for plain-text password match & auto-upgrade to bcrypt
+  if (password === storedPass) {
+    const newHash = bcrypt.hashSync(password, 10);
+    await client.execute({
+      sql: "UPDATE users SET password = ? WHERE username = ?",
+      args: [newHash, username]
+    });
+    return true;
+  }
+
+  return false;
 }
 
 export async function changePasswordDB(username: string, oldPass: string, newPass: string) {
@@ -56,10 +97,11 @@ export async function changePasswordDB(username: string, oldPass: string, newPas
   const isValid = await loginUserDB(username, oldPass);
   if (!isValid) return false;
   
-  // Update to new password
+  // Hash & update to new password
+  const newHash = bcrypt.hashSync(newPass, 10);
   await client.execute({
     sql: "UPDATE users SET password = ? WHERE username = ?",
-    args: [newPass, username]
+    args: [newHash, username]
   });
   return true;
 }

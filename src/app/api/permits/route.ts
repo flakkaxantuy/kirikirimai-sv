@@ -1,5 +1,10 @@
-import { NextResponse } from "next/server";
+import { NextResponse, type NextRequest } from "next/server";
 import { getAllPermitsDB, savePermitDB, deletePermitDB, bulkSavePermitsDB } from "@/lib/db";
+
+function isAuthorized(request: NextRequest) {
+  const session = request.cookies.get("spil_admin_session");
+  return session && session.value === "authenticated";
+}
 
 export async function GET() {
   try {
@@ -11,12 +16,15 @@ export async function GET() {
   }
 }
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
 
-    // Check if bulk sync payload
+    // Check if bulk sync payload (requires admin auth)
     if (Array.isArray(body)) {
+      if (!isAuthorized(request)) {
+        return NextResponse.json({ success: false, error: "Akses ditolak" }, { status: 401 });
+      }
       await bulkSavePermitsDB(body);
       const updated = await getAllPermitsDB();
       return NextResponse.json({ success: true, data: updated });
@@ -34,8 +42,12 @@ export async function POST(request: Request) {
   }
 }
 
-export async function DELETE(request: Request) {
+export async function DELETE(request: NextRequest) {
   try {
+    if (!isAuthorized(request)) {
+      return NextResponse.json({ success: false, error: "Akses ditolak: Wajib login admin" }, { status: 401 });
+    }
+
     const { searchParams } = new URL(request.url);
     const id = searchParams.get("id");
     if (!id) {
