@@ -11,27 +11,16 @@ services:
       - "traefik.enable=true"
       - "traefik.docker.network=traefik-net"
 
-      # Public Router - HTTP (px.spil.co.id)
-      - "traefik.http.routers.spil-ijin-kerja-public-http.rule=Host(`px.spil.co.id`) && PathPrefix(`/app/ijin-kerja`)"
-      - "traefik.http.routers.spil-ijin-kerja-public-http.entrypoints=web"
-      - "traefik.http.routers.spil-ijin-kerja-public-http.service=spil-ijin-kerja-svc"
+      # Public & Internal HTTP Router
+      - "traefik.http.routers.spil-ijin-kerja-http.rule=(Host(`px.spil.co.id`) || Host(`pe.spil.co.id`)) && PathPrefix(`/app/ijin-kerja`)"
+      - "traefik.http.routers.spil-ijin-kerja-http.entrypoints=web"
+      - "traefik.http.routers.spil-ijin-kerja-http.service=spil-ijin-kerja-svc"
 
-      # Public Router - HTTPS (px.spil.co.id)
-      - "traefik.http.routers.spil-ijin-kerja-public-https.rule=Host(`px.spil.co.id`) && PathPrefix(`/app/ijin-kerja`)"
-      - "traefik.http.routers.spil-ijin-kerja-public-https.entrypoints=websecure"
-      - "traefik.http.routers.spil-ijin-kerja-public-https.tls=true"
-      - "traefik.http.routers.spil-ijin-kerja-public-https.service=spil-ijin-kerja-svc"
-
-      # Admin Router - HTTP (pe.spil.co.id)
-      - "traefik.http.routers.spil-ijin-kerja-admin-http.rule=Host(`pe.spil.co.id`) && PathPrefix(`/app/ijin-kerja`)"
-      - "traefik.http.routers.spil-ijin-kerja-admin-http.entrypoints=web"
-      - "traefik.http.routers.spil-ijin-kerja-admin-http.service=spil-ijin-kerja-svc"
-
-      # Admin Router - HTTPS (pe.spil.co.id)
-      - "traefik.http.routers.spil-ijin-kerja-admin-https.rule=Host(`pe.spil.co.id`) && PathPrefix(`/app/ijin-kerja`)"
-      - "traefik.http.routers.spil-ijin-kerja-admin-https.entrypoints=websecure"
-      - "traefik.http.routers.spil-ijin-kerja-admin-https.tls=true"
-      - "traefik.http.routers.spil-ijin-kerja-admin-https.service=spil-ijin-kerja-svc"
+      # Public & Internal HTTPS Router
+      - "traefik.http.routers.spil-ijin-kerja-https.rule=(Host(`px.spil.co.id`) || Host(`pe.spil.co.id`)) && PathPrefix(`/app/ijin-kerja`)"
+      - "traefik.http.routers.spil-ijin-kerja-https.entrypoints=websecure"
+      - "traefik.http.routers.spil-ijin-kerja-https.tls=true"
+      - "traefik.http.routers.spil-ijin-kerja-https.service=spil-ijin-kerja-svc"
 
       # Load Balancer Service Port
       - "traefik.http.services.spil-ijin-kerja-svc.loadbalancer.server.port=3000"
