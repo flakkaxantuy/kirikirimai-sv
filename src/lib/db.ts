@@ -3,7 +3,7 @@ import path from "path";
 import fs from "fs";
 
 // Resolve local SQLite file path
-const dbPath = path.join(process.cwd(), "spil_permits.db");
+const dbPath = process.env.DB_PATH || path.join(process.cwd(), "spil_permits.db");
 
 export const client = createClient({
   url: `file:${dbPath}`,
